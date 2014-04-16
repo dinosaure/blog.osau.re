@@ -1,0 +1,50 @@
+---
+layout: default
+---
+
+<div class="posts">
+  <h3 class="content-subhead">
+    {{ page.date | date_to_string }},
+    On {{ page.tags | array_to_sentence_string }}
+  </h3>
+
+  <section class="post">
+    <header class="post-header">
+      <h1 class="post-title">{{ page.title }}</h1>
+    </header>
+
+    <article class="post-content">
+      {{ content }}
+    </article>
+  </section>
+</div>
+
+<div class="page-nav">
+  <div class="pure-g-r">
+    <div class="pure-u-1-2 prev-post">
+      {% assign previous = page.previous %}
+      {% if previous.categories contains 'project' %}
+        {% assign previous = previous.previous %}
+      {% endif %}
+
+      {% if previous.url %}
+        {% unless previous.categories contains 'project' %}
+          <a href="{{previous.url}}" title="Previous Post: {{previous.title}}">&laquo; {{previous.title}}</a>
+        {% endunless %}
+      {% endif %}
+    </div>
+
+    <div class="pure-u-1-2 next-post">
+      {% assign next = page.next %}
+      {% if next.categories contains 'project' %}
+        {% assign next = next.next %}
+      {% endif %}
+
+      {% if next.url %}
+        {% unless next.categories contains 'project' %}
+          <a href="{{next.url}}" title="Next Post: {{next.title}}">{{next.title}} &raquo;</a>
+        {% endunless %}
+      {% endif %}
+    </div>
+  </div>
+</div>

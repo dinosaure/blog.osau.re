@@ -1,0 +1,15 @@
+title: blog.osau.re
+subtitle: Le blog d'un Dinosaure
+description: Le blog d'un Dinosaure
+author: Romain Calascibetta
+page:
+  home: /
+  blog: /
+  note: /
+  about: /
+  project: /
+social:
+  github: https://github.com/dinosaure
+name: blog.osau.re
+markdown: redcarpet
+pygments: true
