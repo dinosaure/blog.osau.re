@@ -2,6 +2,8 @@ title: blog.osau.re
 subtitle: Le blog d'un Dinosaure
 description: Le blog d'un Dinosaure
 author: Romain Calascibetta
+safe: true
+url: "http://dinosaure.github.io/blog.osau.re"
 page:
   home: /
   blog: /
