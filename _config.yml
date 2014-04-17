@@ -3,14 +3,11 @@ subtitle: Le blog d'un Dinosaure
 description: Le blog d'un Dinosaure
 author: Romain Calascibetta
 safe: true
-url: "http://dinosaure.github.io/blog.osau.re"
+url: "http://dinosaure.github.io/blog.osau.re/"
 page:
-  home: /
-  blog: /
-  note: /
-  about: /
-  project: /
-social:
+  home: http://din.osau.re/
+  blog: http://dinosaure.github.io/blog.osau.re/
+  twitter: https://twitter.com/Dinoosaure
   github: https://github.com/dinosaure
 name: blog.osau.re
 markdown: redcarpet
