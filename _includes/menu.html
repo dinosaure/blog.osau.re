@@ -2,10 +2,7 @@
   <header class="header {% if page.menu %} with-menu {% endif %}">
     <hgroup>
       <h1 class="brand-title">
-	<a href="
-	  {% if page.project %}{{ site.page.project }}
-	  {% elsif page.categories %}{{ site.page.blog }}
-	  {% else %}{{ site.page.home }}{% endif %}">{{ site.title }}</a></h1>
+	<a href="{{ site.page.blog }}">{{ site.title }}</a></h1>
       <h2 class="brand-tagline">{{ site.subtitle }}</h2>
     </hgroup>
     {% if page.menu %}
