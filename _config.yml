@@ -1,14 +1,18 @@
-title: blog.osau.re
-subtitle: Le blog d'un Dinosaure
+title: Dinosaure
+name: Dinosaure
+subtitle: lol ouai ça existe encore
 description: Le blog d'un Dinosaure
 author: Romain Calascibetta
+
 safe: true
 baseurl: /blog.osau.re
+
 page:
   home: http://din.osau.re/
   blog: http://dinosaure.github.io/blog.osau.re/
   twitter: https://twitter.com/Dinoosaure
   github: https://github.com/dinosaure
-name: blog.osau.re
+
 markdown: redcarpet
 pygments: true
+encoding: utf-8

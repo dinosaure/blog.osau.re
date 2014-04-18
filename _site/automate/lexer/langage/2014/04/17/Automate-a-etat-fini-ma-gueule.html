@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+
+  <title>Et un automate à états finis ma gueule ! | Dinosaure</title>
+
+  <meta name="author" content="Romain Calascibetta">
+  <meta name="description" content="Le blog d'un Dinosaure">
+
+  <link rel="alternate" type="application/rss+xml" title="Dinosaure - RSS" href="/feed.xml">
+  <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.3.0/pure-min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+</head>
+<body>
+
+
+<div class="pure-g-r" id="layout">
+  <div class="sidebar pure-u sidebar-color-0">
+  <header class="header ">
+    <hgroup>
+      <h1 class="brand-title">
+	<a href="http://dinosaure.github.io/blog.osau.re/">Dinosaure</a></h1>
+      <h2 class="brand-tagline">lol ouai ça existe encore</h2>
+    </hgroup>
+    
+  </header>
+</div>
+
+
+  <div class="pure-u-1">
+    <div class="content" id="top">
+      <div class="posts">
+  <h3 class="content-subhead">
+    17 Apr 2014,
+    On automate, lexer, and langage
+  </h3>
+
+  <section class="post">
+    <header class="post-header">
+      <h1 class="post-title">Et un automate à états finis ma gueule !</h1>
+    </header>
+
+    <article class="post-content">
+      <h2>Introduction</h2>
+
+<p>Putain, c&#39;est quoi un automate à états finis ? C&#39;est un truc que tu peux sortir devant tes potes à la pose café histoire de te la péter. Mais en réalité, c&#39;est bien plus que ça, c&#39;est un putain d&#39;outil que tu utilises tout les jours, ouai toi le développeur PHP qui veut <em>parser</em> ton HTML avec des <em>regexps</em>. Maintenant, t&#39;arrêtes un peu tes conneries et tu m&#39;écoutes bien pour que tu saches ce que c&#39;est qu&#39;un automate à états finis. Donc je sais pas si tu viens de capter mais tes <em>regexps</em> grâce au <a href="http://fr.wikipedia.org/wiki/Th%C3%A9or%C3%A8me_de_Kleene">théorème de Kleene</a>, bah se sont en réalité des automates comme celui là:</p>
+
+<p><img src="/img/01.jpg" alt="Un Putain d&#39;automate La Poste mec, et je sais que tu l&#39;as déjà vu"></p>
+
+<p>Bon maintenant, tu le vois visuellement mais il y a quoi à l&#39;intérieur ? C&#39;est tout con, un automate à états finis, c&#39;est un ensemble d&#39;état qu&#39;on représente avec des boules (comme les boules de ton père) et elles sont liées par des transitions (des sortes de flèches). Tu commences à partir d&#39;un état, genre l&#39;état <code>1</code> et puis tu vas lire un caractère. Puis en fonction de ce caractère, tu vas aller dans une transition (donc en réalité, les transitions sont caractérisées par un caractère). Et en allant dans une transition, tu vas atteindre un autre état.</p>
+
+<p>Après, on a plusieurs types d&#39;états. Genre l&#39;état de ton père (la boule) c&#39;est un état normal mais après il y a un état initial (note qu&#39;il ne peut y avoir qu&#39;un seul et unique état initial dans un automate). Puis après t&#39;a l&#39;état <em>custom</em>, c&#39;est l&#39;état final. Cette fois, tu peux en avoir plusieurs. Ces états vont servir à délivrer/signaler quelque chose, on verra ce que c&#39;est après. Donc, t&#39;as quoi au final ? Un automate, c&#39;est un ensemble d&#39;état dont un seul est initial et quelques-uns sont finaux et il y a des transitions qui sont annotés d&#39;un caractère.</p>
+
+<p><img src="/img/02.png" alt="Un vrai automate"></p>
+
+<p>Bah là, c&#39;est un vrai automate. Tu peux le dessiner sur le tableau de ton <em>open-space</em>, ça fait classe. Mais sinon tu les vois les boules ? Bah la boule <code>1</code>, c&#39;est un état initial parce que t&#39;as une flèche qui vient du vide intersidéral et qui pointe sur cet état. Ensuite t&#39;as des transitions qui sont annoté avec des lettres (genre <code>a</code> et <code>b</code>). Et puis t&#39;a l&#39;état <code>2</code>, lui c&#39;est un état final parce qu&#39;il a un double cercle. </p>
+
+<p>T&#39;as l&#39;air de rien comprendre mais en vrai, cet automate à états finis, il équivaut à l&#39;expression régulière <code>[ab]*b</code>. Tu vois maintenant ? Genre <code>b</code>, ça <em>match</em>; <code>abb</code>, ça <em>match</em>; <code>a</code>, ça <em>match</em> pas (parce que t&#39;es pas sur l&#39;état final); etc.</p>
+
+<h2>T&#39;es dans la matrice</h2>
+
+<p>Bon t&#39;as l&#39;air de mieux comprendre ce que c&#39;est. Mais alors maintenant, comment ça se passe au niveau du code ? Bah t&#39;as plusieurs manières de représenter un automate à états finis. On va commencer facile, OK ? On va représenter un automate par une matrice. L&#39;expression régulière qu&#39;on aura est <code>din2oba</code> (ouai ma gueule, dédi&#39; à <a href="https://www.youtube.com/watch?v=AFNEBA8sLJ0">booba</a>). On va limiter l&#39;alphabet sur lequel on travaille pour pas se taper les 127 caractères ASCII. Donc notre alphabet sera <code>din2oba</code> (tu peux pas test).</p>
+
+<p><img src="/img/03.png" alt="Dinosaure est trop beau"></p>
+
+<p>Bon maintenant, tu rengaines ton <code>strcmp</code>, <code>==</code>^W<code>===</code> ou ton <code>compare</code>, on va faire de l&#39;automate ! Cela consiste à créer deux tableaux à 2 dimensions. La taille de ces tableaux sera <code>nombre d&#39;états * nombre de lettres de ton alphabet</code> donc du <code>7 x 7</code> (49 si tu sais pas compter) - maintenant tu sais pourquoi j&#39;ai limité l&#39;alphabet, je me voyais pas me taper 889 cases.</p>
+
+<p>Le premier tableau va être ce qu&#39;on nomme une <a href="http://fr.wikipedia.org/wiki/Matrice_de_transition">matrice de transition</a>, celle-ci va tout simplement dire à qu&#39;elle état t&#39;es lié quand tu es sur un état <code>N</code> et que tu viens de choper le caractère <code>E</code>. Comme ça, tu seras où il faut aller en tapant <code>t[N][E]</code>. T&#39;inquiètes pas, on va voir comment faire.</p>
+
+<p>Le deuxième tableau, lui, c&#39;est la matrice des actions. En faite, c&#39;est là où on va différencier l&#39;état final des autres états (en général, l&#39;état final va dire: &quot;putain mec, j&#39;ai trouvé un truc qui <em>match</em>&quot;). Sauf que cette action ne va pas se faire quand on sera sur l&#39;état mais quand on ira vers lui. Genre, on écrira que ça <em>match</em> quand on ira vers l&#39;état final et pas quand on y sera (payes ta différence, mec).</p>
+
+<p>Je suis un putain d&#39;<em>hipster</em> donc je te fais le bouzin en C++ without class (ouai, c&#39;est le deuxième langage fait par <a href="http://en.wikipedia.org/wiki/Bjarne_Stroustrup">Bjarne Stroustrup</a>) ma gueule:</p>
+
+<div class="highlight"><pre><code class="c"><span class="kt">int</span> <span class="n">t</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+<span class="c1">//  d  i  n  2  o  b  a  ?</span>
+  <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p>Ici, t&#39;imagines que les caractères de notre alphabet <code>din2oba</code> sont dans les abscisses et que tes états sont dans les ordonnées - notes que j&#39;ai rajouté une colonne, c&#39;est pour gérer les cas où nous choperions un caractère qui n&#39;appartient pas à l&#39;alphabet <code>din2oba</code>. Imagine que t&#39;es à l&#39;état <code>0</code> (donc la première ligne) et que tu choppes la lettre <code>d</code> (donc la première colonne). Il te dit à cet endroit précis <code>t[0][&#39;d&#39;] = 1</code> (on va considérer que <code>d</code> vaut <code>0</code>, hein). Donc en sachant ça, tu sais que tu vas passer à l&#39;état <code>1</code>. Et à l&#39;état <code>1</code>, tu pourras passer à l&#39;état <code>2</code> seulement si tu choppes le caractère <code>i</code> (deuxième colonne). Si tu choppes une autre lettre, tu retombes sur l&#39;état <code>0</code> (bah oui, si tu regarde la deuxième ligne, toutes les autres possibilités sont des <code>0</code>).</p>
+
+<p><img src="/img/04.png" alt="LOL, ça boucle"></p>
+
+<p>Tu l&#39;as vois la diagonale ? En même temps, tu vas pas passer de l&#39;état <code>4</code> vers l&#39;état <code>1</code> (genre <code>t[4][&#39;d&#39;] = 1</code>) ? Sinon, mon expression régulière serait <code>[din2]+oba</code> (ouai mon gars, ça bouclerait !). Bon après notre matrice de transition, on va faire la matrice des actions, non ? Bah ouai, faut bien savoir ce qu&#39;on fait en allant d&#39;un état à un autre et rendre spécifique l&#39;état final. On considère qu&#39;il y a 3 actions possibles. La première consiste à aller basiquement d&#39;un état à un autre mais elle va aussi enregistrer le caractère qu&#39;on vient de lire dans un <em>token</em>. La deuxième consiste à revenir à l&#39;état initial dans le cas d&#39;une erreur (imaginons qu&#39;on tombe sur le caractère <code>f</code> ou qu&#39;on tombe d&#39;abord sur un <code>i</code> avant de tomber sur un <code>d</code>) et supprimer le <em>token</em> puisqu&#39;il est faux. Enfin la dernière action consiste à caractériser l&#39;état final. Celle ci consiste à dire que ça <em>match</em>, on délivrera notre <em>token</em> et on pourra ensuite revenir à l&#39;état initial.</p>
+
+<div class="highlight"><pre><code class="c"><span class="cp">#define MA (0) </span><span class="c1">// comme MOVE APPEND</span>
+<span class="cp">#define ER (1) </span><span class="c1">// comme ERROR</span>
+<span class="cp">#define HR (2) </span><span class="c1">// comme HALF RESET</span>
+
+<span class="kt">int</span> <span class="n">a</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="p">{</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">ER</span><span class="p">,</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">ER</span><span class="p">,</span> <span class="n">MA</span><span class="p">,</span> <span class="n">ER</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span><span class="p">,</span> <span class="n">HR</span> <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h2>Le solveur dans ta face</h2>
+
+<p>Bon on a réussi à représenter notre automate à états finis en C++ avec des tableaux. Mais là, comme ça, ça sert un peu à rien. Faut un truc qui les manipule, tu vois. Avant que je balance le code (je vois que t&#39;es en chien d&#39;avoir la réponse sur un plateau d&#39;argent), je t&#39;explique un peu le principe du bouzin. C&#39;est pas compliqué, je vais juste répéter ce que je disais plus haut.</p>
+
+<p>Bon alors, grosso-modo, on va commencer par avoir un état courrant (<em>current_state</em>, j&#39;ai eu le TOEIC ma gueule) qui va avoir la valeur <code>0</code> (notre état initial). Ensuite, avec notre chaîne de caractèren on doit voir si elle <em>match</em> ou pas. On va donc entrer dans une boucle qui va itérer dans celle ci et on va modifier notre <em>current_state</em> pour qu&#39;il obtienne le prochain état selon le caractère courrant. Cela ressemble un peu à ça:</p>
+
+<div class="highlight"><pre><code class="c"><span class="kt">int</span>     <span class="nf">to_alphabet</span><span class="p">(</span><span class="kt">char</span> <span class="n">c</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">case</span> <span class="sc">&#39;d&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="k">case</span> <span class="sc">&#39;i&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="k">case</span> <span class="sc">&#39;n&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+        <span class="k">case</span> <span class="sc">&#39;2&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+        <span class="k">case</span> <span class="sc">&#39;o&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+        <span class="k">case</span> <span class="sc">&#39;b&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+        <span class="k">case</span> <span class="sc">&#39;a&#39;</span>: <span class="k">return</span> <span class="p">(</span><span class="mi">6</span><span class="p">);</span>
+        <span class="nl">default:</span> <span class="k">return</span> <span class="p">(</span><span class="mi">7</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>    <span class="nf">lexer</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">str</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="n">current_state</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])];</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="s">&quot;Je suis à l&#39;état: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">current_state</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="n">i</span>  <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<div class="highlight"><pre><code class="sh"><span class="nv">$ </span>./a.out <span class="s2">&quot;din&quot;</span>
+Je suis à l<span class="s1">&#39;état 1</span>
+<span class="s1">Je suis à l&#39;</span>état 2
+Je suis à l<span class="err">&#39;</span>état 3
+</code></pre></div>
+
+<div class="highlight"><pre><code class="sh"><span class="nv">$ </span>./a.out <span class="s2">&quot;did&quot;</span>
+Je suis à l<span class="s1">&#39;état 1</span>
+<span class="s1">Je suis à l&#39;</span>état 2
+Je suis à l<span class="err">&#39;</span>état 0
+</code></pre></div>
+
+<p>Bon tu vois maintenant le principe de passage d&#39;un état à un autre maintenant. C&#39;est grâce à notre matrice de transition. Mais on utilise pas encore notre matrice des actions, il le faut pourtant pour voir quand notre chaîne <em>match</em> avec notre expression régulière. Donc on va étoffer un peu plus le code pour exécuter les actions qu&#39;on a décrites plus haut en fonction de l&#39;état et du caractère.</p>
+
+<div class="highlight"><pre><code class="c"><span class="kt">void</span>    <span class="nf">lexer</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">token</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">str</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="k">switch</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])])</span>
+        <span class="p">{</span>
+            <span class="k">case</span> <span class="n">MA</span>:
+                <span class="n">token</span> <span class="o">+=</span> <span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                <span class="n">current_state</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])];</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="k">case</span> <span class="n">HR</span>:
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">token</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; match !&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+                <span class="n">token</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+                <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="k">case</span> <span class="n">ER</span>:
+                <span class="n">token</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+                <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">==</span> <span class="n">HR</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">token</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; match !&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Bon on a un truc qui marche pas trop mais calme toi un peu c&#39;est pas encore fini. On a un dernier problème. Si tu donnes la chaîne <code>din2oba</code>, c&#39;est cool, ça marche. Si tu passes la chaîne <code>din2obaLOLdin2oba</code>, ça <em>match</em> deux fois, c&#39;est cool, ça marche. Par contre, si tu passes <code>din2obadin2oba</code>, bah là, ça <em>match</em> qu&#39;une fois ! Le problème réside dans l&#39;action <code>HR</code>. En faite, quand on tombe sur l&#39;action <code>HR</code>, on a consumé toute la première occurence de <code>din2oba</code> et le <code>d</code> de la deuxième occurence pour ensuite passer à l&#39;état <code>0</code> (au lieu du <code>1</code>). Et c&#39;est ça qui fait planter parce que, ça se trouve, après être dans l&#39;action <code>HR</code>, il peut y avoir une autre occurrence comme dans le dernier exemple, il ne faudrait pas consumer ce dernier caractère <code>d</code> mais le laisser pour une nouvelle itération.</p>
+
+<div class="highlight"><pre><code class="c"><span class="kt">void</span>    <span class="nf">lexer</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">token</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">str</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="k">switch</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])])</span>
+        <span class="p">{</span>
+            <span class="k">case</span> <span class="n">MA</span>:
+                <span class="n">token</span> <span class="o">+=</span> <span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                <span class="n">current_state</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])];</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="k">case</span> <span class="n">HR</span>:
+                <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">!=</span> <span class="n">current_state</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">token</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; match !&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+                    <span class="n">token</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">!=</span> <span class="n">ER</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="k">else</span>
+                    <span class="n">token</span> <span class="o">+=</span> <span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+                <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="k">case</span> <span class="n">ER</span>:
+                <span class="n">token</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">!=</span> <span class="n">ER</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+                <span class="n">current_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">current_state</span><span class="p">][</span><span class="n">to_alphabet</span><span class="p">(</span><span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">==</span> <span class="n">HR</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">token</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; match !&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Bon voilà, j&#39;ai juste fait un retour en arrière. Si passer de l&#39;état <code>0</code> à un autre état avec le caractère courant ne produit pas l&#39;action <code>ER</code>. Cela veut dire qu&#39;on a hypothétiquement une autre occurence juste après. Il faut donc <em>sauvegarder</em> le caractère. Ensuite, j&#39;ai rendu plus spécifique l&#39;apparation du <em>match</em>. Si on tombe sur ce genre d&#39;expression <code>din2ob(a)+</code> (ça voudrait dire que depuis le <code>HR</code>, on puisse tomber sur un état dont l&#39;action est <code>MA</code>, ou plus visuellement, notre état final aurait une transition pointant sur lui même), au lieu de délivrer le token quand nous sommes fasses à un <code>HR</code>, il faut voir si l&#39;expression régulière ne continue pas. Si c&#39;est le cas, il faut rajouter le caractère courant au <em>token</em> et itérer une nouvelle fois. Sinon, c&#39;est que nous sommes vraiment à la fin et nous pouvons dire qu&#39;on a trouvé une occurrence.</p>
+
+<p><img src="/img/05.png" alt="MTHRFCKR Cas"></p>
+
+<h2>Conclusion</h2>
+
+<p>Bon t&#39;as réussi à implémenter un petit automate à état fini de merde. Bah oui, là t&#39;as fait un truc tellement con qu&#39;il existe déjà des logiciels qui te génère ce bouzin à ta place. Mais ça c&#39;est pas fait en un jour et j&#39;espère que t&#39;as bien capter le principe parce que la prochaine fois, on va aller à un autre niveau. On va faire des graphes et tout et tout, t&#39;inquiètes.</p>
+
+<p>Tu comprendras que ici, on était plus ou moins spécifique aux expressions régulières mais tu peux très bien faire en sorte que tes transitions dépendent de autre chose que des caractères et que tes actions fassent autre chose que rajouter ces mêmes caractères à un <em>token</em>. Les automates à états finis sont dans d&#39;autres domaines comme le réseau ou l&#39;I.A. donc rentre toi bien ça dans le crâne. C&#39;est pasun outil kikoo, c&#39;est bien un truc qu&#39;on utilise tout les jours.</p>
+
+    </article>
+  </section>
+</div>
+
+<div class="page-nav">
+  <div class="pure-g-r">
+    <div class="pure-u-1-2 prev-post">
+      
+      
+
+      
+    </div>
+
+    <div class="pure-u-1-2 next-post">
+      
+      
+
+      
+    </div>
+  </div>
+</div>
+
+    </div>
+
+    <footer class="footer">
+      <p class="credit">
+</p>
+
+    </footer>
+  </div>
+</div>
+
+</body>
+</html>
+
